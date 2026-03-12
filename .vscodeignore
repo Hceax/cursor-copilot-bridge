@@ -1,0 +1,12 @@
+**/*.ts
+!out/**/*.js
+src/
+node_modules/
+.vscode/
+*.vsix
+!icon.png
+screenshot.png
+stderr.txt
+stdout.txt
+tsconfig.json
+**/*.map

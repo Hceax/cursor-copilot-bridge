@@ -1,0 +1,8 @@
+out/
+node_modules/
+*.vsix
+vscode.proposed.*.ts
+vscode.d.ts
+screenshot*.png
+stderr.txt
+stdout.txt

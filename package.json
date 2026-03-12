@@ -1,0 +1,159 @@
+{
+  "name": "cursor-copilot-bridge",
+  "publisher": "nicepkg",
+  "displayName": "Cursor Copilot Bridge",
+  "description": "Use Cursor CLI models in GitHub Copilot Chat — no proxy, no server, just works.",
+  "version": "0.1.0",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "extensionDependencies": [
+    "github.copilot-chat"
+  ],
+  "categories": [
+    "AI",
+    "Chat"
+  ],
+  "keywords": [
+    "cursor",
+    "copilot",
+    "ai",
+    "chat",
+    "language-model",
+    "llm",
+    "bridge",
+    "claude",
+    "gpt",
+    "gemini",
+    "streaming",
+    "agent"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/hceax/cursor-copilot-bridge#readme",
+  "bugs": {
+    "url": "https://github.com/hceax/cursor-copilot-bridge/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hceax/cursor-copilot-bridge"
+  },
+  "galleryBanner": {
+    "color": "#1e1e3c",
+    "theme": "dark"
+  },
+  "enabledApiProposals": [
+    "chatProvider"
+  ],
+  "contributes": {
+    "languageModelChatProviders": [
+      {
+        "vendor": "cursor-bridge",
+        "displayName": "Cursor CLI",
+        "managementCommand": "cursorBridge.configure"
+      }
+    ],
+    "commands": [
+      {
+        "command": "cursorBridge.configure",
+        "category": "Cursor Bridge",
+        "title": "Configure Cursor CLI"
+      },
+      {
+        "command": "cursorBridge.refreshModels",
+        "category": "Cursor Bridge",
+        "title": "Refresh Available Models"
+      }
+    ],
+    "configuration": {
+      "title": "Cursor Copilot Bridge",
+      "properties": {
+        "cursorBridge.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Cursor API key for authentication. Leave empty to use CLI's built-in auth (agent login)."
+        },
+        "cursorBridge.agentPath": {
+          "type": "string",
+          "default": "agent",
+          "markdownDescription": "Path to the Cursor CLI binary (`agent` / `agent.cmd`). Default assumes `agent` is in PATH.\n\nInstall: `irm 'https://cursor.com/install?win32=true' | iex`"
+        },
+        "cursorBridge.defaultModel": {
+          "type": "string",
+          "default": "",
+          "description": "Default model ID (e.g. opus-4.6-thinking, sonnet-4.6). Leave empty to expose all available models."
+        },
+        "cursorBridge.force": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-approve all tool invocations without prompting (--force / --yolo)."
+        },
+        "cursorBridge.approveMcps": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically approve all MCP servers (--approve-mcps)."
+        },
+        "cursorBridge.sandbox": {
+          "type": "string",
+          "default": "",
+          "enum": ["", "enabled", "disabled"],
+          "enumDescriptions": [
+            "Use Cursor's default sandbox behavior",
+            "Force sandbox mode on",
+            "Force sandbox mode off"
+          ],
+          "description": "Override sandbox mode for shell commands."
+        },
+        "cursorBridge.customHeaders": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Custom headers to add to agent requests (format: 'Name: Value')."
+        },
+        "cursorBridge.sessionTtlMinutes": {
+          "type": "number",
+          "default": 30,
+          "minimum": 1,
+          "maximum": 1440,
+          "description": "Session idle timeout in minutes. Expired sessions are cleaned up automatically."
+        },
+        "cursorBridge.maxHistoryTurns": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum conversation turns to include when starting a new CLI session."
+        },
+        "cursorBridge.timeoutSeconds": {
+          "type": "number",
+          "default": 300,
+          "minimum": 10,
+          "maximum": 3600,
+          "description": "Maximum time in seconds to wait for a CLI response."
+        },
+        "cursorBridge.verbose": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable verbose logging in the Cursor Bridge output channel."
+        }
+      }
+    }
+  },
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "download-api": "npx @vscode/dts dev && npx @vscode/dts main",
+    "postinstall": "npm run download-api",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint",
+    "build": "npx @vscode/vsce package -o cursor-copilot-bridge.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@vscode/dts": "^0.4.1",
+    "typescript": "^5.9.2"
+  }
+}
