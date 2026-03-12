@@ -104,7 +104,11 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-  provider?.destroy();
-  provider = undefined;
-  log("Cursor Copilot Bridge deactivated.");
+  try {
+    provider?.destroy();
+    provider = undefined;
+    log("Cursor Copilot Bridge deactivated.");
+  } catch {
+    /* channel may already be closed during shutdown */
+  }
 }

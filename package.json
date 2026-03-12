@@ -43,7 +43,8 @@
     "theme": "dark"
   },
   "enabledApiProposals": [
-    "chatProvider"
+    "chatProvider",
+    "languageModelThinkingPart"
   ],
   "contributes": {
     "languageModelChatProviders": [

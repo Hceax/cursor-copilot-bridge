@@ -162,15 +162,48 @@ export class CursorBridgeProvider implements vscode.LanguageModelChatProvider {
 
       let hasOutput = false;
 
-      const parseLine = createStreamParser(
-        (text) => {
+      const replyThinking = (text: string) => {
+        try {
+          progress.report(new vscode.LanguageModelThinkingPart(text));
+        } catch { /* disposed or unsupported */ }
+      };
+
+      const parseLine = createStreamParser({
+        onText: (text) => {
           hasOutput = true;
           reply(text);
         },
-        () => {
+        onDone: () => {
           logVerbose(config.verbose, "CLI stream completed");
         },
-      );
+        onThinkingDelta: (text) => {
+          hasOutput = true;
+          replyThinking(text);
+        },
+        onThinkingDone: () => {
+          logVerbose(config.verbose, "CLI thinking completed");
+        },
+        onSessionInit: (info) => {
+          log(`CLI session: id=${info.sessionId}, model=${info.model}, mode=${info.permissionMode}`);
+        },
+        onToolCallStarted: (info) => {
+          log(`Tool started: [${info.toolType}] ${info.description || info.callId}`);
+        },
+        onToolCallCompleted: (result) => {
+          const status = result.success ? "ok" : "fail";
+          const time = result.executionTimeMs != null ? ` (${result.executionTimeMs}ms)` : "";
+          log(`Tool completed: [${result.toolType}] ${status}${time} ${result.description || result.callId}`);
+        },
+        onUsage: (stats) => {
+          const parts: string[] = [];
+          if (stats.inputTokens != null) parts.push(`in=${stats.inputTokens}`);
+          if (stats.outputTokens != null) parts.push(`out=${stats.outputTokens}`);
+          if (stats.cacheReadTokens != null) parts.push(`cache_r=${stats.cacheReadTokens}`);
+          if (stats.cacheWriteTokens != null) parts.push(`cache_w=${stats.cacheWriteTokens}`);
+          if (stats.durationMs != null) parts.push(`${(stats.durationMs / 1000).toFixed(1)}s`);
+          log(`Usage: ${parts.join(", ")}`);
+        },
+      });
 
       const cancelListener = token.onCancellationRequested(() => {
         log("Request cancelled by user");
