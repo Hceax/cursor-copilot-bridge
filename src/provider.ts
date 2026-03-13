@@ -60,7 +60,7 @@ export class CursorBridgeProvider implements vscode.LanguageModelChatProvider {
     model: vscode.LanguageModelChatInformation,
     messages: readonly vscode.LanguageModelChatRequestMessage[],
     options: vscode.ProvideLanguageModelChatResponseOptions,
-    progress: vscode.Progress<vscode.LanguageModelResponsePart2>,
+    progress: vscode.Progress<vscode.LanguageModelResponsePart>,
     token: vscode.CancellationToken,
   ): Promise<void> {
     const config = this.getConfig();
@@ -164,7 +164,7 @@ export class CursorBridgeProvider implements vscode.LanguageModelChatProvider {
 
       const replyThinking = (text: string) => {
         try {
-          progress.report(new vscode.LanguageModelThinkingPart(text));
+          (progress as vscode.Progress<any>).report(new vscode.LanguageModelThinkingPart(text));
         } catch { /* disposed or unsupported */ }
       };
 
