@@ -11,6 +11,7 @@ export interface BridgeConfig {
   sessionTtlMs: number;
   maxHistoryTurns: number;
   timeoutMs: number;
+  maxMode: boolean;
   verbose: boolean;
 }
 
@@ -27,6 +28,8 @@ export function loadConfig(): BridgeConfig {
     sessionTtlMs: cfg.get<number>("sessionTtlMinutes", 30) * 60_000,
     maxHistoryTurns: cfg.get<number>("maxHistoryTurns", 10),
     timeoutMs: cfg.get<number>("timeoutSeconds", 300) * 1000,
+    maxMode: cfg.get<boolean>("maxMode", false),
     verbose: cfg.get<boolean>("verbose", false),
   };
 }
+

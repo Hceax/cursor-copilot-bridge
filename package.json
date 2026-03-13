@@ -76,7 +76,7 @@
         "cursorBridge.agentPath": {
           "type": "string",
           "default": "agent",
-          "markdownDescription": "Path to the Cursor CLI executable file (`agent.cmd` on Windows, `agent` on macOS/Linux).\n\n- If `agent` is already in your PATH, keep the default value `agent`.\n- Otherwise, set to the **full path of the executable file**, e.g.:\n  - `C:\\Users\\you\\.cursor\\cli\\agent.cmd`\n\nInstall Cursor CLI:\n- **Windows**: `irm 'https://cursor.com/install?win32=true' | iex`\n- **macOS/Linux**: `curl -fsSL https://cursor.com/install | bash`\n\nAfter install, run `agent login` to authenticate."
+          "markdownDescription": "Path to the Cursor CLI executable.\n\n**Important: On Windows, use the full path ending with `agent.cmd`**, e.g.:\n- `C:\\Users\\you\\.cursor\\cli\\agent.cmd`\n- `C:\\CursorToolkit\\bin\\agent.cmd`\n\nThe default value `agent` only works if the CLI directory is in your system PATH. If you're unsure, run `where agent` in a terminal to find the full path, then paste it here.\n\n**macOS/Linux**: use the full path to the `agent` binary, or keep default if it's in PATH.\n\nInstall Cursor CLI:\n- **Windows**: `irm 'https://cursor.com/install?win32=true' | iex`\n- **macOS/Linux**: `curl -fsSL https://cursor.com/install | bash`\n\nAfter install, run `agent login` to authenticate."
         },
         "cursorBridge.defaultModel": {
           "type": "string",
@@ -132,6 +132,11 @@
           "minimum": 10,
           "maximum": 3600,
           "markdownDescription": "Max time in seconds to wait for a CLI response. Complex tasks may need more time. Default is 300s (5 min)."
+        },
+        "cursorBridge.maxMode": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable Cursor **Max Mode** for all requests. Max mode extends context window size and tool-call limits.\n\nWhen enabled, the bridge writes `maxMode: true` to `cli-config.json` before each request. The CLI resets it after use, so there is no permanent side-effect."
         },
         "cursorBridge.verbose": {
           "type": "boolean",

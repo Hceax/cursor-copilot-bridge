@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
@@ -11,6 +11,7 @@ export interface RunResult {
 export interface RunOptions {
   cwd?: string;
   timeoutMs?: number;
+  maxMode?: boolean;
 }
 
 export interface RunStreamingOptions extends RunOptions {
@@ -24,30 +25,74 @@ export interface RunStreamingOptions extends RunOptions {
  * (<, >, &, |, newlines) in arguments being misinterpreted by cmd.exe.
  */
 function resolveAgent(agentPath: string): { cmd: string; prefixArgs: string[] } {
-  if (process.platform === "win32" && /\.cmd$/i.test(agentPath)) {
-    const dir = path.dirname(path.resolve(agentPath));
+  let resolved = agentPath;
+
+  // Resolve bare command names (e.g. "agent") to full path via PATH lookup
+  if (process.platform === "win32" && !path.isAbsolute(agentPath) && !agentPath.includes(path.sep)) {
+    for (const ext of [".cmd", ".exe", ""]) {
+      const candidate = agentPath + ext;
+      for (const dir of (process.env.PATH ?? "").split(path.delimiter)) {
+        const full = path.join(dir, candidate);
+        if (fs.existsSync(full)) { resolved = full; break; }
+      }
+      if (resolved !== agentPath) break;
+    }
+  }
+
+  if (process.platform === "win32" && /\.cmd$/i.test(resolved)) {
+    const dir = path.dirname(path.resolve(resolved));
     const nodeBin = path.join(dir, "node.exe");
     const script = path.join(dir, "index.js");
     if (fs.existsSync(nodeBin) && fs.existsSync(script)) {
-      return {
-        cmd: nodeBin,
-        prefixArgs: [script],
-      };
+      return { cmd: nodeBin, prefixArgs: [script] };
     }
   }
-  return { cmd: agentPath, prefixArgs: [] };
+  return { cmd: resolved, prefixArgs: [] };
 }
 
-function spawnAgent(cmd: string, args: string[], cwd?: string) {
+const PREFLIGHT_SCRIPT = path.join(__dirname, "max-mode-preflight.js");
+
+function applyMaxModePreflight(resolved: { cmd: string; prefixArgs: string[] }): void {
+  const nodeBin = resolved.prefixArgs.length > 0 ? resolved.cmd : undefined;
+  if (!nodeBin) return;
+
+  const agentScript = resolved.prefixArgs[0] ?? "";
+  try {
+    execFileSync(nodeBin, [PREFLIGHT_SCRIPT, agentScript], {
+      timeout: 3000,
+      stdio: "ignore",
+    });
+  } catch {
+    /* best-effort */
+  }
+}
+
+function spawnAgent(cmd: string, args: string[], opts?: { cwd?: string; maxMode?: boolean }) {
   const resolved = resolveAgent(cmd);
+
+  if (opts?.maxMode) {
+    applyMaxModePreflight(resolved);
+  }
+
   const fullArgs = [...resolved.prefixArgs, ...args];
-  const env = {
+
+  const env: Record<string, string | undefined> = {
     ...process.env,
     CURSOR_INVOKED_AS: "agent.cmd",
   };
 
+  // Ensure CURSOR_CONFIG_DIR points to the agent's config directory
+  // so the CLI reads the same cli-config.json the preflight wrote to.
+  if (!env.CURSOR_CONFIG_DIR && resolved.prefixArgs.length > 0) {
+    const agentDir = path.dirname(path.resolve(resolved.prefixArgs[0]));
+    const configDir = path.join(agentDir, "..", "data", "config");
+    if (fs.existsSync(path.join(configDir, "cli-config.json"))) {
+      env.CURSOR_CONFIG_DIR = configDir;
+    }
+  }
+
   return spawn(resolved.cmd, fullArgs, {
-    cwd,
+    cwd: opts?.cwd,
     env,
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -59,7 +104,7 @@ export function runStreaming(
   opts: RunStreamingOptions,
 ): Promise<{ code: number; stderr: string }> {
   return new Promise((resolve, reject) => {
-    const child = spawnAgent(cmd, args, opts.cwd);
+    const child = spawnAgent(cmd, args, { cwd: opts.cwd, maxMode: opts.maxMode });
 
     const timeout =
       typeof opts.timeoutMs === "number" && opts.timeoutMs > 0
@@ -110,7 +155,7 @@ export function run(
   opts: RunOptions = {},
 ): Promise<RunResult> {
   return new Promise((resolve, reject) => {
-    const child = spawnAgent(cmd, args, opts.cwd);
+    const child = spawnAgent(cmd, args, { cwd: opts.cwd, maxMode: opts.maxMode });
 
     const timeout =
       typeof opts.timeoutMs === "number" && opts.timeoutMs > 0

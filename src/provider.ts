@@ -19,7 +19,6 @@ export interface ModelInfo {
 export class CursorBridgeProvider implements vscode.LanguageModelChatProvider {
   private sessionManager: SessionManager;
   private cachedModels: ModelInfo[] = [];
-
   constructor(
     private getConfig: () => BridgeConfig,
   ) {
@@ -212,6 +211,7 @@ export class CursorBridgeProvider implements vscode.LanguageModelChatProvider {
       runStreaming(config.agentPath, cmdArgs, {
         cwd: workspaceDir,
         timeoutMs: config.timeoutMs,
+        maxMode: config.maxMode,
         onLine: (line) => {
           logVerbose(config.verbose, `CLI: ${line.slice(0, 150)}`);
           parseLine(line);
@@ -475,3 +475,4 @@ function textFromMessage(msg: vscode.LanguageModelChatRequestMessage): string {
   }
   return parts.join("");
 }
+
