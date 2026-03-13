@@ -3,7 +3,7 @@
   "publisher": "nicepkg",
   "displayName": "Cursor Copilot Bridge",
   "description": "Use Cursor CLI models in GitHub Copilot Chat — no proxy, no server, just works.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "icon": "icon.png",
   "engines": {
     "vscode": "^1.104.0"

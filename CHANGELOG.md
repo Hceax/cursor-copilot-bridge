@@ -2,6 +2,19 @@
 
 All notable changes to **Cursor Copilot Bridge** will be documented in this file.
 
+## [0.2.0] - 2026-03-13
+
+### Added
+- Thinking block support — streams `LanguageModelThinkingPart` for models that expose reasoning
+- Full CLI event parsing: system init, thinking delta/completed, tool call lifecycle
+
+### Changed
+- Dropped `chatProvider` proposed API; now uses stable `vscode.lm.registerLanguageModelChatProvider` (reduced dependency on experimental APIs)
+- Improved all setting descriptions with clearer English guidance and examples
+
+### Fixed
+- Duplicate text output when CLI sends turn-level snapshots after tool calls (added suffix-prefix overlap deduplication)
+
 ## [0.1.0] - 2026-03-12
 
 ### Added

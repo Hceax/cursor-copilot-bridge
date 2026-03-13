@@ -89,19 +89,25 @@ export function createStreamParser(cb: StreamParserCallbacks): (line: string) =>
           const text = extractAssistantText(obj);
           if (!text) break;
 
+          if (text === accumulated) break;
+
           if (obj.timestamp_ms) {
             cb.onText(text);
+            accumulated += text;
           } else {
-            if (text === accumulated) break;
+            // Final snapshot for this turn — deduplicate against accumulated
+            if (accumulated.endsWith(text)) break;
             if (text.startsWith(accumulated) && accumulated.length > 0) {
               const delta = text.slice(accumulated.length);
               if (delta) cb.onText(delta);
             } else {
-              cb.onText(text);
+              // accumulated = Turn1+Turn2 deltas, text = Turn2 snapshot
+              const overlap = suffixPrefixOverlap(accumulated, text);
+              const delta = text.slice(overlap);
+              if (delta) cb.onText(delta);
             }
+            accumulated = text;
           }
-          accumulated += (obj.timestamp_ms ? text : "");
-          if (!obj.timestamp_ms) accumulated = text;
           break;
         }
 
@@ -138,6 +144,18 @@ export function createStreamParser(cb: StreamParserCallbacks): (line: string) =>
       /* non-JSON lines are ignored */
     }
   };
+}
+
+/**
+ * Find the longest string S such that `a` ends with S and `b` starts with S.
+ * Returns the length of S.
+ */
+function suffixPrefixOverlap(a: string, b: string): number {
+  const maxLen = Math.min(a.length, b.length);
+  for (let len = maxLen; len > 0; len--) {
+    if (a.endsWith(b.slice(0, len))) return len;
+  }
+  return 0;
 }
 
 function extractAssistantText(obj: any): string {
