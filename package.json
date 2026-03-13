@@ -71,27 +71,27 @@
         "cursorBridge.apiKey": {
           "type": "string",
           "default": "",
-          "description": "Cursor API key for authentication. Leave empty to use CLI's built-in auth (agent login)."
+          "markdownDescription": "Cursor API key for authentication. Leave empty to use CLI's built-in auth (requires `agent login` first).\n\nGet your key: [cursor.com/settings](https://cursor.com/settings)"
         },
         "cursorBridge.agentPath": {
           "type": "string",
           "default": "agent",
-          "markdownDescription": "Path to the Cursor CLI binary (`agent` / `agent.cmd`). Default assumes `agent` is in PATH.\n\nInstall: `irm 'https://cursor.com/install?win32=true' | iex`"
+          "markdownDescription": "Path to the Cursor CLI executable file (`agent.cmd` on Windows, `agent` on macOS/Linux).\n\n- If `agent` is already in your PATH, keep the default value `agent`.\n- Otherwise, set to the **full path of the executable file**, e.g.:\n  - `C:\\Users\\you\\.cursor\\cli\\agent.cmd`\n\nInstall Cursor CLI:\n- **Windows**: `irm 'https://cursor.com/install?win32=true' | iex`\n- **macOS/Linux**: `curl -fsSL https://cursor.com/install | bash`\n\nAfter install, run `agent login` to authenticate."
         },
         "cursorBridge.defaultModel": {
           "type": "string",
           "default": "",
-          "description": "Default model ID (e.g. opus-4.6-thinking, sonnet-4.6). Leave empty to expose all available models."
+          "markdownDescription": "Default model ID, e.g. `opus-4.6-thinking`, `sonnet-4.6`, `gpt-4o`.\n\nLeave empty to expose all available models in the Copilot model picker."
         },
         "cursorBridge.force": {
           "type": "boolean",
           "default": true,
-          "description": "Auto-approve all tool invocations without prompting (--force / --yolo)."
+          "markdownDescription": "Auto-approve all tool invocations without prompting (maps to `--force` / `--yolo`). When disabled, each tool call will wait for confirmation."
         },
         "cursorBridge.approveMcps": {
           "type": "boolean",
           "default": false,
-          "description": "Automatically approve all MCP servers (--approve-mcps)."
+          "markdownDescription": "Automatically approve all MCP servers (maps to `--approve-mcps`)."
         },
         "cursorBridge.sandbox": {
           "type": "string",
@@ -99,10 +99,10 @@
           "enum": ["", "enabled", "disabled"],
           "enumDescriptions": [
             "Use Cursor's default sandbox behavior",
-            "Force sandbox mode on",
-            "Force sandbox mode off"
+            "Force sandbox on (commands run in an isolated environment)",
+            "Force sandbox off (commands run directly on the system)"
           ],
-          "description": "Override sandbox mode for shell commands."
+          "markdownDescription": "Override sandbox mode for shell commands. Sandbox prevents the AI from executing dangerous system commands."
         },
         "cursorBridge.customHeaders": {
           "type": "array",
@@ -110,33 +110,33 @@
           "items": {
             "type": "string"
           },
-          "description": "Custom headers to add to agent requests (format: 'Name: Value')."
+          "markdownDescription": "Custom HTTP headers to add to agent requests, format: `Name: Value`.\n\nExample: `Authorization: Bearer xxx`"
         },
         "cursorBridge.sessionTtlMinutes": {
           "type": "number",
           "default": 30,
           "minimum": 1,
           "maximum": 1440,
-          "description": "Session idle timeout in minutes. Expired sessions are cleaned up automatically."
+          "markdownDescription": "Session idle timeout in minutes. Expired sessions are cleaned up automatically; the next message will start a new session."
         },
         "cursorBridge.maxHistoryTurns": {
           "type": "number",
           "default": 10,
           "minimum": 1,
           "maximum": 100,
-          "description": "Maximum conversation turns to include when starting a new CLI session."
+          "markdownDescription": "Max conversation turns to carry over when starting a new CLI session. Higher values give more context but cost more tokens."
         },
         "cursorBridge.timeoutSeconds": {
           "type": "number",
           "default": 300,
           "minimum": 10,
           "maximum": 3600,
-          "description": "Maximum time in seconds to wait for a CLI response."
+          "markdownDescription": "Max time in seconds to wait for a CLI response. Complex tasks may need more time. Default is 300s (5 min)."
         },
         "cursorBridge.verbose": {
           "type": "boolean",
           "default": false,
-          "description": "Enable verbose logging in the Cursor Bridge output channel."
+          "markdownDescription": "Enable verbose logging in the `Output → Cursor Bridge` panel. Recommended when troubleshooting issues."
         }
       }
     }
